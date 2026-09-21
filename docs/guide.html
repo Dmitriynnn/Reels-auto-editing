@@ -1,0 +1,100 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Авто-монтаж Reels с Claude — инструкция</title>
+<style>
+  :root{ --ink:#1c1a17; --muted:#6b6560; --warm:#b57e34; --line:#e7e2d9; --bg:#fbf9f5; --card:#fff; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  @page{ size:A4; margin:16mm 15mm; }
+  html,body{ margin:0; font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); background:#fff; font-size:12.5pt; line-height:1.5; }
+  h1{ font-size:30pt; margin:0 0 6pt; letter-spacing:-.5px; }
+  h2{ font-size:15pt; margin:0 0 4pt; }
+  .sub{ color:var(--muted); font-size:12pt; margin:0 0 4pt; }
+  .cover{ padding:26pt 24pt; border:1.5px solid var(--line); border-radius:16px; background:linear-gradient(160deg,#fbf9f5,#f3efe7); margin-bottom:16pt; }
+  .badge{ display:inline-block; font-size:10pt; letter-spacing:2px; text-transform:uppercase; color:var(--warm); font-weight:700; margin-bottom:8pt; }
+  .step{ display:flex; gap:14pt; padding:12pt 0; border-top:1px solid var(--line); break-inside:avoid; }
+  .num{ flex:0 0 34px; height:34px; border-radius:50%; background:var(--ink); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:14pt; }
+  .step .body{ flex:1; }
+  .muted{ color:var(--muted); }
+  code,.mono{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:10.5pt; }
+  .cmd{ background:#141210; color:#f3efe7; padding:8pt 10pt; border-radius:8px; margin:6pt 0; white-space:pre-wrap; word-break:break-all; }
+  .prompt{ background:#fff; border:1.5px dashed var(--warm); border-radius:12px; padding:14pt 16pt; margin:8pt 0; font-size:11pt; line-height:1.55; white-space:pre-wrap; }
+  .tip{ background:#f6f2ea; border-left:3px solid var(--warm); padding:8pt 12pt; border-radius:0 8px 8px 0; margin:6pt 0; font-size:11pt; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10pt; margin-top:8pt; }
+  .card{ border:1px solid var(--line); border-radius:12px; padding:12pt; background:var(--card); break-inside:avoid; }
+  .card b{ display:block; margin-bottom:3pt; }
+  .foot{ color:var(--muted); font-size:10pt; margin-top:14pt; border-top:1px solid var(--line); padding-top:8pt; }
+  .pagebreak{ break-before:page; }
+  h2 .k{ color:var(--warm); }
+</style></head><body>
+
+<div class="cover">
+  <div class="badge">Reels • автомонтаж • Claude</div>
+  <h1>Как превратить сырое видео в готовый Reels</h1>
+  <p class="sub">Пошаговая инструкция. Технических знаний не нужно — достаточно скопировать один текст и прислать видео. Настройка делается один раз.</p>
+</div>
+
+<div class="step"><div class="num">1</div><div class="body">
+  <h2>Установите приложение <span class="k">Claude</span></h2>
+  <p class="muted">Скачайте с <b>claude.ai/download</b> (Mac или Windows), установите и войдите в свой аккаунт. Это официальное приложение — то самое, где есть вкладка «Code» (Код).</p>
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="body">
+  <h2>Откройте вкладку <span class="k">Code</span> и создайте новый чат</h2>
+  <p class="muted">В приложении сверху выберите раздел <b>Code</b>. Нажмите «новый чат». Если попросит выбрать папку — выберите любую (например, «Документы»): там появятся файлы и готовые ролики.</p>
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="body">
+  <h2>Скопируйте этот текст и вставьте <span class="k">одним сообщением</span></h2>
+  <p class="muted">Выделите весь блок ниже, скопируйте и отправьте в чат. Claude сам всё установит — ничего в терминале делать не нужно.</p>
+  <div class="prompt">Ты — монтажёр вертикальных reels. Настрой рабочую среду и дальше монтируй мои видео в фиксированном стиле. Действуй сам, не проси меня делать что-то в терминале.
+
+ШАГ 1. Склонируй репозиторий:
+git clone https://github.com/Dmitriynnn/Reels-auto-editing.git ~/Reels-auto-editing
+
+ШАГ 2. Установи окружение (это займёт несколько минут, качается модель ~574 МБ):
+bash ~/Reels-auto-editing/setup.sh
+Если чего-то не хватает — установи сам любым способом и повтори, не перекладывая на меня.
+
+ШАГ 3. Прочитай инструкцию монтажа и запомни как руководство:
+~/Reels-auto-editing/skill/REELS_STYLE_SKILL.md
+
+ШАГ 4. Напиши мне «Среда готова, пришли видео» — и жди.
+
+ДАЛЬШЕ, когда пришлю видео, ты без лишних вопросов: сделаешь транскрипт; сам придумаешь хук, 3 совета/секции, вставки, акцентные слова и финальный призыв по смыслу речи; соберёшь ролик через pipeline/make_reel.py; пришлёшь готовый mp4. Стиль фиксированный: вертикаль 1080×1920, ускорение и резка пауз, крупный хук, секции «совет N/3», субтитры по слову с акцентами, вставки-стикеры и карточки, «дышащая» камера, свуши, финальный призыв. Ничего не располагай на лице и не залезай в зоны интерфейса Instagram — это уже зашито в инструментах.</div>
+</div></div>
+
+<div class="step"><div class="num">4</div><div class="body">
+  <h2>Дождитесь ответа <span class="k">«Среда готова»</span></h2>
+  <p class="muted">Первая настройка идёт 5–15 минут (ставятся программы и модель распознавания речи). Это разовое действие — в следующий раз можно сразу присылать видео.</p>
+  <div class="tip">Claude может попросить разрешение выполнить команды — соглашайтесь (кнопка «Allow»/«Разрешить»). Он ставит бесплатные инструменты, ничего вредного.</div>
+</div></div>
+
+<div class="step pagebreak"><div class="num">5</div><div class="body">
+  <h2>Пришлите ваше <span class="k">видео</span></h2>
+  <p class="muted">Перетащите видеофайл в чат (или нажмите скрепку и выберите его) и отправьте. Лучше всего вертикальное видео «говорящая голова». Claude сам сделает монтаж и через несколько минут пришлёт готовый Reels.</p>
+</div></div>
+
+<div class="step"><div class="num">6</div><div class="body">
+  <h2>Заберите <span class="k">готовый ролик</span></h2>
+  <p class="muted">Claude пришлёт файл <span class="mono">.mp4</span> прямо в чат и скажет, что внутри. Его можно сразу выкладывать. Хотите изменить тексты, призыв или темп — просто напишите об этом, и он переделает.</p>
+</div></div>
+
+<h2 style="margin-top:16pt">Если что-то пошло не так</h2>
+<div class="grid">
+  <div class="card"><b>«Долго ничего не происходит»</b><span class="muted">Идёт скачивание модели (~574 МБ) и установка. Подождите до строки «Среда готова».</span></div>
+  <div class="card"><b>«Нужен Homebrew» (на Mac)</b><span class="muted">Напишите Claude: «установи Homebrew сам и продолжи». Он справится.</span></div>
+  <div class="card"><b>«Просит разрешение на команды»</b><span class="muted">Это нормально. Нажимайте «Разрешить» — иначе он не сможет установить инструменты.</span></div>
+  <div class="card"><b>Следующее видео</b><span class="muted">Настройка уже сделана — просто пришлите новый файл в тот же (или новый) чат.</span></div>
+</div>
+
+<h2 style="margin-top:14pt">Что делает инструмент</h2>
+<p class="muted">Режет паузы и ускоряет речь, поднимает в вертикаль 1080×1920, добавляет крупный
+хук, секции-советы, субтитры по одному слову с выделением ключевых слов, вставки-стикеры и
+карточки-сравнения, «дышащую» камеру и звуки. Всё оформление ставится выше лица и не залезает
+в кнопки Instagram. На выходе — готовый к публикации Reels из любого исходника.</p>
+
+<div class="foot">
+  Репозиторий с инструментами: github.com/Dmitriynnn/Reels-auto-editing • Шрифты OFL, модели MIT/Apache-2.0.
+  Оригинальные коммерческие шрифты в комплект не входят — используются близкие бесплатные аналоги с кириллицей.
+</div>
+
+</body></html>

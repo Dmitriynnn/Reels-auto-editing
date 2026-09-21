@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+_work/
+_test/
+*.mp4
+assets/models/*.bin
+.DS_Store
