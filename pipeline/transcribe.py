@@ -7,15 +7,17 @@ transcribe.py <video> <workdir>
 """
 import sys, os, json, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _venv import ensure_venv
 from env import FFMPEG
 
 def main(video, wd):
+    ensure_venv()
     os.makedirs(wd, exist_ok=True)
     wav=os.path.join(wd,"a16k.wav")
     subprocess.run([FFMPEG,"-y","-hide_banner","-loglevel","error","-i",video,
                     "-ac","1","-ar","16000","-vn",wav],check=True)
     from faster_whisper import WhisperModel
-    name=os.environ.get("WHISPER_MODEL","large-v3-turbo")
+    name=os.environ.get("WHISPER_MODEL","small")
     lang=os.environ.get("WHISPER_LANG","ru"); lang=None if lang=="auto" else lang
     ct=os.environ.get("WHISPER_COMPUTE","int8")
     model=WhisperModel(name, device="cpu", compute_type=ct)

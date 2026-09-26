@@ -1,46 +1,80 @@
 #!/usr/bin/env python3
 """
-Универсальная настройка окружения (Windows / macOS / Linux) — БЕЗ Homebrew.
-Всё ставится через pip: faster-whisper (распознавание) + imageio-ffmpeg (ffmpeg) +
-Pillow/opencv/numpy/fonttools. Затем предзагружается модель распознавания.
+Установщик окружения для авто-монтажа рилсов. Windows / macOS / Linux.
 
-Запуск:  python3 setup.py   (на Windows:  python setup.py)
+Делает всё сам и проверяет себя:
+  1) создаёт изолированный venv (обходит блокировку системного pip / PEP 668);
+  2) ставит лёгкие зависимости (Pillow, opencv, numpy, faster-whisper, imageio-ffmpeg —
+     ffmpeg-бинарь приходит с пакетом, системный не нужен);
+  3) качает МАЛЕНЬКУЮ модель распознавания (small, ~250 МБ) и делает самопроверку
+     всего пути монтажа;
+  4) пишет путь venv-python в .reels_runner — дальше весь пайплайн идёт через него.
+
+Итог: строка READY (и RUNNER=<путь>) при успехе, либо SETUP_FAILED: <одна причина>.
+Запуск:  python3 setup.py   (Windows:  python setup.py)
 """
 import os, sys, subprocess
-HERE=os.path.dirname(os.path.abspath(__file__))
 
-def pip_install():
-    print("==> ставлю python-зависимости (pip)…")
-    req=os.path.join(HERE,"requirements.txt")
-    try:
-        subprocess.run([sys.executable,"-m","pip","install","--user","-r",req],check=True)
-    except subprocess.CalledProcessError:
-        subprocess.run([sys.executable,"-m","pip","install","-r",req],check=True)
+HERE = os.path.dirname(os.path.abspath(__file__))
+VENV = os.path.expanduser(os.path.join("~", ".reels-auto-venv"))
+REQ = os.path.join(HERE, "requirements.txt")
+RUNNER_FILE = os.path.join(HERE, ".reels_runner")
 
-def check_ffmpeg():
-    sys.path.insert(0, os.path.join(HERE,"pipeline"))
-    from env import ffmpeg_exe
-    ff=ffmpeg_exe()
-    r=subprocess.run([ff,"-hide_banner","-version"],capture_output=True,text=True)
-    print("==> ffmpeg:", r.stdout.splitlines()[0] if r.stdout else ff)
 
-def predownload_model():
-    name=os.environ.get("WHISPER_MODEL","large-v3-turbo")
-    print(f"==> скачиваю модель распознавания '{name}' (может занять несколько минут)…")
-    from faster_whisper import WhisperModel
-    WhisperModel(name, device="cpu", compute_type=os.environ.get("WHISPER_COMPUTE","int8"))
-    print("    модель готова (в кэше).")
+def venv_python(venv):
+    return os.path.join(venv, "Scripts", "python.exe") if os.name == "nt" else os.path.join(venv, "bin", "python")
 
-def verify():
-    import PIL, cv2, numpy, fontTools, faster_whisper, imageio_ffmpeg
-    print("==> проверка импортов: OK")
+
+def run(cmd, timeout=1800):
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+
+
+def fail(reason):
+    print("SETUP_FAILED: " + reason)
+    sys.exit(1)
+
 
 def main():
-    pip_install()
-    check_ffmpeg()
-    verify()
-    predownload_model()
-    print("\n==> ГОТОВО. Среда настроена. Можно присылать видео.")
+    print("==> создаю изолированное окружение (venv)…")
+    if not os.path.exists(venv_python(VENV)):
+        r = run([sys.executable, "-m", "venv", VENV])
+        if r.returncode != 0 or not os.path.exists(venv_python(VENV)):
+            fail("не удалось создать venv. Установи Python 3.9+ с python.org (галочка Add to PATH) и повтори. %s" % (r.stderr or "").strip()[:200])
+    vpy = venv_python(VENV)
 
-if __name__=="__main__":
-    main()
+    print("==> ставлю зависимости (это несколько минут)…")
+    run([vpy, "-m", "pip", "install", "--upgrade", "pip"], timeout=600)
+    r = run([vpy, "-m", "pip", "install", "-r", REQ], timeout=2400)
+    if r.returncode != 0:
+        # одна повторная попытка с большим таймаутом соединения
+        r = run([vpy, "-m", "pip", "install", "--default-timeout=180", "-r", REQ], timeout=2400)
+    if r.returncode != 0:
+        tail = (r.stderr or r.stdout or "").strip().splitlines()[-1:] or [""]
+        fail("не установились зависимости (проверь интернет и место на диске). %s" % tail[0][:200])
+
+    # раннер — чтобы весь пайплайн шёл через venv даже при вызове системным python
+    try:
+        with open(RUNNER_FILE, "w", encoding="utf-8") as fh:
+            fh.write(vpy)
+    except Exception as e:
+        fail("не удалось записать .reels_runner (%s)" % e)
+
+    print("==> качаю модель распознавания (small, ~250 МБ) и проверяю себя…")
+    os.environ.setdefault("WHISPER_MODEL", "small")
+    r = run([vpy, os.path.join(HERE, "pipeline", "selftest.py")], timeout=2400)
+    out = (r.stdout or "") + (r.stderr or "")
+    if "SELFTEST_OK" not in out:
+        line = "SELFTEST_FAIL" in out and out[out.index("SELFTEST_FAIL"):].splitlines()[0] or (out.strip().splitlines()[-1:] or [""])[0]
+        fail("самопроверка не прошла: %s" % line[:200])
+
+    print("RUNNER=%s" % vpy)
+    print("READY. Среда готова, можно присылать видео.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except subprocess.TimeoutExpired:
+        fail("установка/загрузка модели заняла слишком долго (медленный интернет). Повтори при стабильной сети.")
+    except KeyboardInterrupt:
+        fail("прервано")

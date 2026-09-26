@@ -3,4 +3,5 @@ __pycache__/
 _*/
 *.mp4
 assets/models/*.bin
+.reels_runner
 .DS_Store

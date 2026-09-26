@@ -7,10 +7,12 @@ make_reel.py <video> <edit_plan.json> <out.mp4> [workdir]
 import sys, os, json, subprocess
 HERE=os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from env import FFMPEG
+from _venv import ensure_venv
 def run(mod,*args):
     subprocess.run([sys.executable,os.path.join(HERE,mod),*[str(a) for a in args]],check=True)
 def main(video, plan, out, wd=None):
+    ensure_venv()
+    from env import FFMPEG
     wd=wd or os.path.join(os.path.dirname(os.path.abspath(out)),"_work")
     os.makedirs(wd,exist_ok=True)
     if not os.path.exists(os.path.join(wd,"words.json")):

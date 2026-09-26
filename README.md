@@ -18,12 +18,14 @@ Claude берёт из транскрипта и кладёт в `edit_plan.json
 
 ## Быстрый старт (вручную)
 ```
-python3 setup.py                                # pip-зависимости + ffmpeg + модель (Win: python setup.py)
-python3 pipeline/transcribe.py video.mov _work  # транскрипт
-# заполнить _work/edit_plan.json (см. pipeline/edit_plan.example.json и skill/)
-python3 pipeline/make_reel.py video.mov _work/edit_plan.json out.mp4 _work
+python3 setup.py                                # venv + зависимости + модель small + самопроверка (печатает READY)
+python3 pipeline/make_reel.py video.mov pipeline/edit_plan.example.json out.mp4
 ```
-Скорость по умолчанию — `"auto"` (подгон под темп Instagram). Паузы вырезаются автоматически.
+`setup.py` создаёт изолированный venv (`~/.reels-auto-venv`), ставит всё нужное (ffmpeg из imageio-ffmpeg,
+opencv, Pillow, faster-whisper), качает лёгкую модель распознавания **small (~250 МБ)** и проверяет себя.
+Путь venv-python пишется в `.reels_runner`; скрипты пайплайна сами уходят в это окружение, даже если их
+вызвать системным `python3`. Скорость по умолчанию — `"auto"`, паузы вырезаются автоматически.
+Распознавание речи автоматическое — вставлять текст руками не нужно.
 
 ## Состав
 ```
@@ -41,8 +43,9 @@ docs/GUIDE.pdf               PDF-инструкция для пользоват�
 ```
 
 ## Требования
-Windows, macOS или Linux; Python 3.9+; ~2–3 ГБ на модель и зависимости; интернет для установки.
-Homebrew/компиляция не нужны — ffmpeg приходит из `imageio-ffmpeg`, распознавание — `faster-whisper`.
+Windows, macOS или Linux; Python 3.9+; интернет и ~1–1.5 ГБ свободного места; при первом
+запуске разрешить выполнение команд. Homebrew/компиляция не нужны — ffmpeg приходит из
+`imageio-ffmpeg`, распознавание — `faster-whisper` (модель small). Первая настройка 5–10 минут.
 
 ## Лицензии
 - Код — MIT (`LICENSE`).
